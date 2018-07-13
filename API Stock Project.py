@@ -24,9 +24,6 @@ def ticker_lookup():
 
 
 
-##for i in (response.read()):
-##    print(i)
-
 if __name__ == "__main__":
     ticker_lookup()
     
