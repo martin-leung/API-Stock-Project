@@ -1,6 +1,7 @@
 import json
 import urllib.parse
 import urllib.request
+import os
 from ast import literal_eval
 
 url_base = "https://api.iextrading.com/1.0/"
@@ -162,11 +163,35 @@ def ammount_shares(ticker):
                 print("\nInvalid Ammount: Must be a integer and greater than 0\n")
         except:
             print("\nInvalid Ammount: Must be a integer and greater than 0\n")
+
+def check_if_empty():
+    #check if text file is empty and puts a {} in if it is
+    if os.stat("test.txt").st_size == 0:
+        new_file = {}
+        with open('test.txt', 'w') as outfile:
+            json.dump(new_file, outfile)
             
-def add_json():
-    print("in-progress json")
-      
-def add_portfolio():
+def add_json(ticker, ammount, price):
+    check_if_empty()
+    with open('test.txt', 'r') as f:
+        datastore = json.load(f)
+
+    if ticker not in datastore:
+        new = {'total_shares' : ammount , 'total_price' : price, 'shares':[{'shares':
+                ammount, 'price': price, 'total_ammount': float(price)*float(ammount)}]}
+        datastore[ticker] = new
+    else:
+        datastore[ticker]['total_shares'] += ammount
+        datastore[ticker]['total_price'] = datastore[ticker]['total_price'] + float(ammount)*float(price)
+        new = {'shares':ammount, 'price': price, 'total_ammount': float(price)*float(ammount)}
+        datastore[ticker]['shares'].append(new)
+    with open('test.txt', 'w') as outfile:
+        json.dump(datastore, outfile)
+    outfile.close()
+
+    
+def add_portfolio()
+    print("Add Shares:\n")
     ticker = add_helper()
     ammount = ammount_shares(ticker)
     ticker_url = url_base +"stock/" + ticker + "/book"
@@ -177,16 +202,20 @@ def add_portfolio():
             price = input("At what price would you like to add these shares at? Current Price($" + str(data['quote']['latestPrice']) + ")- 'C' or your choice value: ")
             if price == "C" or price == "c":
                 price = data['quote']['latestPrice']
+                add_json(ticker, ammount, price)
                 print("\n" + str(ammount) + " shares were added to portfolio for a total of $" + str(float(ammount)*float(price))+ ".\n")
                 break
             elif float(price) >= 0:
                 print("\n" + str(ammount) + " shares were added to portfolio for a total of $" + str(float(ammount)*float(price))+ ".\n")
+                add_json(ticker, ammount, price)
                 break
         except:
             print("ERROR: Invalid Command")
 
 def delete_port():
-    print("\nDeleting Portfolio")
+    print("Remoce Shares:\n")
+    ticker = add_helper()
+    
     
 ########################
 #END OF PORTOFOLIO CODE#

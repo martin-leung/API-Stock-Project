@@ -1,0 +1,1 @@
+{"msft": {"total_shares": "5100", "total_price": 10921.13, "shares": [{"shares": "5", "price": 108.13, "total_ammount": 540.65}, {"shares": "100", "price": 108.13, "total_ammount": 10813.0}]}, "nflx": {"total_shares": "4", "total_price": 350.92, "shares": [{"shares": "4", "price": 350.92, "total_ammount": 1403.68}]}}
