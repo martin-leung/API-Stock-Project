@@ -112,22 +112,35 @@ def ticker_menu():
 #PORTFOLIO CODE#
 ################
 def portfolio_menu():
-    print("\nPortfolio Manager (In-Progress) \n")
-    command = input("Options:\n    'V' - View Portoflio\n    'A' - Add Ticker\n    'D' - Delete Ticker\n    'Q' - Quit\nCommand: ")
-    if command.upper() == "P":
+    print("\nPortfolio Manager\n")
+    command = input("Options:\n    'V' - View Portoflio\n    'A' - Add Ticker\n    'D' - Delete Ticker\n    'Q' - Quit Portfolio\nCommand: ")
+    if command.upper() == "V":
         view_portfolio()
     elif command.upper() == "A":
-        print("\nAdding to Portfolio\n")
+        #print("\nAdding to Portfolio\n")
         add_portfolio()
     elif command.upper() == "D":
-        delete_portfolio()
+        delete_port()
+    elif command.upper() == "Q":
+        main_menu()
     else:
         print("ERROR: Invalid Command")
         portfolio_menu()
 
 def view_portfolio():
     print("\nCuurent Portfolio")
-
+    with open('test.txt', 'r') as f:
+        datastore = json.load(f)
+    print("")
+    for i in datastore:
+        ticker_url = url_base +"stock/" + i + "/book"
+        response = urllib.request.urlopen(ticker_url)
+        data = json.loads(response.read())
+        print(str(i).upper() + ": ")
+        print("Total Shares: " + str((datastore[i]['total_shares']))+"   ")
+        print("Total Price: " + str(round(float(datastore[i]['total_shares'])*data['quote']['latestPrice'],2))+"\n")
+    portfolio_menu()
+    
 def add_helper():
     try:
         ticker = input("What ticker would you like to add to your portfolio? ")
@@ -188,9 +201,8 @@ def add_json(ticker, ammount, price):
     with open('test.txt', 'w') as outfile:
         json.dump(datastore, outfile)
     outfile.close()
-
     
-def add_portfolio()
+def add_portfolio():
     print("Add Shares:\n")
     ticker = add_helper()
     ammount = ammount_shares(ticker)
@@ -199,7 +211,7 @@ def add_portfolio()
     data = json.loads(response.read())
     while True:
         try:
-            price = input("At what price would you like to add these shares at? Current Price($" + str(data['quote']['latestPrice']) + ")- 'C' or your choice value: ")
+            price = input("\nAt what price would you like to add these shares at? Current Price($" + str(data['quote']['latestPrice']) + ")- 'C' or your choice value: ")
             if price == "C" or price == "c":
                 price = data['quote']['latestPrice']
                 add_json(ticker, ammount, price)
@@ -211,12 +223,57 @@ def add_portfolio()
                 break
         except:
             print("ERROR: Invalid Command")
+    portfolio_menu()
 
+def delete_helper():
+    try:
+        ticker = input("What ticker would you like to delete from your portfolio? ")
+        ticker_url = url_base +"stock/" + ticker + "/book"
+        response = urllib.request.urlopen(ticker_url)
+        data = json.loads(response.read())
+        print("\nWould you like to add the following company? \n")
+        print("Ticker: " + data['quote']['symbol'])
+        print("Company Name: " + data['quote']['companyName'])
+        print("Latest Price: " + str(data['quote']['latestPrice'])+"\n")
+        while True:
+            command = input("Yes (Y) or No (N): ")
+            if command.upper() == "Y":
+                return ticker
+                break
+            elif command.upper() == "N":
+                return delete_helper()
+                break
+            else:
+                print("ERROR: Invalid Command")
+    except:
+        print("ERROR: Invalid Ticker")
+        return delete_helper()
+    
 def delete_port():
-    print("Remoce Shares:\n")
-    ticker = add_helper()
-    
-    
+    print("Remove Shares:\n")
+    check_if_empty()
+    with open('test.txt', 'r') as f:
+        datastore = json.load(f)
+    while True:
+        ticker = delete_helper()
+        if ticker in datastore:
+            print()
+            ammount = ammount_shares(ticker)
+            if int(ammount) > int(datastore[ticker]['total_shares']):
+                print("You only have",str(datastore[ticker]['total_shares']),ticker.upper(), "shares in your portfolio\n", sep = " ")
+            else:
+                temp = int(datastore[ticker]['total_shares'])
+                datastore[ticker]['total_shares'] = str(temp - int(ammount))
+                print("\nDeleted " + ammount + " " + ticker.upper() + " from portfolio")
+                print(datastore[ticker]['total_shares']+ " " + ticker.upper() + " left in portfolio\n")
+                with open('test.txt', 'w') as outfile:
+                    json.dump(datastore, outfile)
+                outfile.close()
+                portfolio_menu()
+                break
+        else:
+            print("\nTicker doesn't exist in portfolio\n")
+
 ########################
 #END OF PORTOFOLIO CODE#
 ########################
