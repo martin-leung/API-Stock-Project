@@ -6,6 +6,12 @@ from ast import literal_eval
 
 url_base = "https://api.iextrading.com/1.0/"
 
+################
+#LOG IN SCREEN##
+################
+def log_in():
+    user = input("Username: ")
+    password = input("Password: ")
 #####################
 #TICKER RELATED CODE#
 #####################
